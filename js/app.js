@@ -13,7 +13,7 @@ let currentVideoTitle = '';
 let episodesReversed = false;
 
 // 页面初始化
-document。addEventListener('DOMContentLoaded'， function () {
+document.addEventListener('DOMContentLoaded'， function () {
     // 初始化API复选框
     initAPICheckboxes();
 
@@ -227,14 +227,14 @@ function renderCustomAPIsList() {
         apiItem.innerHTML = `
             <div class="flex items-center flex-1 min-w-0">
                 <input type="checkbox" id="custom_api_${index}" 
-                       class="form-checkbox h-3 w-3 text-blue-600 mr-1 ${api。isAdult ? 'api-adult' : ''}" 
+                       class="form-checkbox h-3 w-3 text-blue-600 mr-1 ${api.isAdult ? 'api-adult' : ''}" 
                        ${selectedAPIs。includes('custom_' + index) ? 'checked' : ''} 
                        data-custom-index="${index}">
                 <div class="flex-1 min-w-0">
                     <div class="text-xs font-medium ${textColorClass} truncate">
                         ${adultTag}${api。name}
                     </div>
-                    <div class="text-xs text-gray-500 truncate">${api。url}</div>
+                    <div class="text-xs text-gray-500 truncate">${api.url}</div>
                     ${detailLine}
                 </div>
             </div>
