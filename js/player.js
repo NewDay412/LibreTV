@@ -406,9 +406,14 @@ function initPlayer(videoUrl) {
 
     // 清空原有选项
     qualitySelect.innerHTML = '';
+// 获取URL参数
+    const urlParams = new URLSearchParams(window.location.search);
 
     // 获取不同清晰度的播放地址
-    const qualityEpisodes = JSON.parse(localStorage.getItem('qualityEpisodes')) || {};
+    const qualityEpisodes = JSON.parse(urlParams.get('qualityEpisodes') || '{}');
+
+    // 保存到localStorage
+    localStorage.setItem('qualityEpisodes', JSON.stringify(qualityEpisodes));
 
     // 添加清晰度选项
     Object.keys(qualityEpisodes).forEach(quality => {
