@@ -1,5 +1,6 @@
 // 全局变量
-let selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '["tyyszy", "bfzy", "dyttzy", "ruyi","xiaomaomi","ffzy","heimuer","zy360","iqiyi","wolong","hwba","jisu","dbzy","mozhua","mdzy","zuid","yinghua","baidu","wujin","wwzy","ikun","lzi","fantuanzy","qiqi"]'); // 默认选中资源
+let selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || JSON.stringify(Object.keys(API_SITES)));
+//let selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '["tyyszy", "bfzy", "dyttzy", "ruyi","xiaomaomi","ffzy","heimuer","zy360","iqiyi","wolong","hwba","jisu","dbzy","mozhua","mdzy","zuid","yinghua","baidu","wujin","wwzy","ikun","lzi","fantuanzy","qiqi"]'); // 默认选中资源
 let customAPIs = JSON.parse(localStorage.getItem('customAPIs') || '[]'); // 存储自定义API列表
 
 // 添加当前播放的集数索引
@@ -27,10 +28,9 @@ document。addEventListener('DOMContentLoaded'， function () {
 
     // 设置默认API选择（如果是第一次加载）
     if (!localStorage.getItem('hasInitializedDefaults')) {
-        // 默认选中资源
-        selectedAPIs = ["tyyszy", "bfzy", "dyttzy", "ruyi","xiaomaomi","ffzy","heimuer","zy360","iqiyi","wolong","hwba","jisu","dbzy","mozhua","mdzy","zuid","yinghua","baidu","wujin","wwzy","ikun","lzi","fantuanzy","qiqi"];
+    // 默认选中所有 API
+        selectedAPIs = Object.keys(API_SITES);
         localStorage.setItem('selectedAPIs', JSON.stringify(selectedAPIs));
-
         // 默认选中过滤开关
         localStorage.setItem('yellowFilterEnabled', 'true');
         localStorage.setItem(PLAYER_CONFIG.adFilteringStorage, 'true');
@@ -227,14 +227,14 @@ function renderCustomAPIsList() {
         apiItem.innerHTML = `
             <div class="flex items-center flex-1 min-w-0">
                 <input type="checkbox" id="custom_api_${index}" 
-                       class="form-checkbox h-3 w-3 text-blue-600 mr-1 ${api.isAdult ? 'api-adult' : ''}" 
-                       ${selectedAPIs.includes('custom_' + index) ? 'checked' : ''} 
+                       class="form-checkbox h-3 w-3 text-blue-600 mr-1 ${api。isAdult ? 'api-adult' : ''}" 
+                       ${selectedAPIs。includes('custom_' + index) ? 'checked' : ''} 
                        data-custom-index="${index}">
                 <div class="flex-1 min-w-0">
                     <div class="text-xs font-medium ${textColorClass} truncate">
-                        ${adultTag}${api.name}
+                        ${adultTag}${api。name}
                     </div>
-                    <div class="text-xs text-gray-500 truncate">${api.url}</div>
+                    <div class="text-xs text-gray-500 truncate">${api。url}</div>
                     ${detailLine}
                 </div>
             </div>
