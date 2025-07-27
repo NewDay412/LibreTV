@@ -137,11 +137,31 @@ async function handleApiRequest(url) {
                 
                 // 提取播放地址
                 let episodes = [];
-                
+                let qualityEpisodes = {}; // 新增：用于存储不同清晰度的播放地址
                 if (videoDetail.vod_play_url) {
                     // 分割不同播放源
                     const playSources = videoDetail.vod_play_url.split('$$$');
-                    
+                    // 提取每个播放源的集数和清晰度信息
+        playSources.forEach(source => {
+            const parts = source.split('$');
+            const quality = parts[0]; // 假设第一个部分是清晰度名称
+            const episodeList = parts.slice(1);
+
+            const urls = episodeList.map(ep => {
+                const urlParts = ep.split('#');
+                return urlParts.length > 1 ? urlParts[1] : '';
+            }).filter(url => url && (url.startsWith('http://') || url.startsWith('https://')));
+
+            if (urls.length > 0) {
+                qualityEpisodes[quality] = urls;
+            }
+        });
+
+        // 选择默认清晰度的集数
+        const defaultQuality = Object.keys(qualityEpisodes)[0];
+        episodes = qualityEpisodes[defaultQuality];
+    }
+
                     // 提取第一个播放源的集数（通常为主要源）
                     if (playSources.length > 0) {
                         const mainSource = playSources[0];
@@ -165,6 +185,7 @@ async function handleApiRequest(url) {
                 return JSON.stringify({
                     code: 200,
                     episodes: episodes,
+                    qualityEpisodes: qualityEpisodes, // 新增：返回不同清晰度的播放地址
                     detailUrl: detailUrl,
                     videoInfo: {
                         title: videoDetail.vod_name,
