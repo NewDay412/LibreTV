@@ -13,7 +13,7 @@ const PASSWORD_CONFIG = {
 
 // 网站信息配置
 const SITE_CONFIG = {
-    name: 'LibreTV',
+    name: 'tv0.longlong.baby',
     url: 'https://libretv.is-an.org',
     description: '免费在线视频搜索与观看平台',
     logo: 'image/logo.png',
@@ -112,6 +112,14 @@ const API_SITES = {
     },
     lzi: {
         api: 'https://cj.lziapi.com/api.php/provide/vod/',
+        name: '量子资源站'
+    },
+        fantuan: {        
+    api: 'https://www.fantuan.tv/api.php/provide/vod/',        
+    name: '饭团影视'    
+    },
+    qiqi: {
+        api: 'https://www.qiqidys.com/api.php/provide/vod/',
         name: '量子资源站'
     },
     testSource: {
