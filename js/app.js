@@ -1,7 +1,5 @@
 // 全局变量
-let selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '["tyyszy", "bfzy", "dyttzy", "ruyi"，,"xiaomaomi","ffzy","heimuer",                        
-"zy360","iqiyi","wolong","hwba","jisu","dbzy","mozhua","mdzy","zuid","yinghua","baidu","wujin",                        
-"wwzy","ikun","lzi","fantuan","qiqi"]'); // 默认选中资源
+let selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '["tyyszy", "bfzy", "dyttzy", "ruyi","xiaomaomi","ffzy","heimuer","zy360","iqiyi","wolong","hwba","jisu","dbzy","mozhua","mdzy","zuid","yinghua","baidu","wujin","wwzy","ikun","lzi","fantuan","qiqi"]'); // 默认选中资源
 let customAPIs = JSON.parse(localStorage.getItem('customAPIs') || '[]'); // 存储自定义API列表
 
 // 添加当前播放的集数索引
@@ -14,7 +12,7 @@ let currentVideoTitle = '';
 let episodesReversed = false;
 
 // 页面初始化
-document。addEventListener('DOMContentLoaded', function () {
+document。addEventListener('DOMContentLoaded'， function () {
     // 初始化API复选框
     initAPICheckboxes();
 
@@ -30,9 +28,7 @@ document。addEventListener('DOMContentLoaded', function () {
     // 设置默认API选择（如果是第一次加载）
     if (!localStorage.getItem('hasInitializedDefaults')) {
         // 默认选中资源
-        selectedAPIs = ["tyyszy", "bfzy", "dyttzy", "ruyi"，,"xiaomaomi","ffzy","heimuer",
-                        "zy360","iqiyi","wolong","hwba","jisu","dbzy","mozhua","mdzy","zuid","yinghua","baidu","wujin",
-                        "wwzy","ikun","lzi","fantuan","qiqi"];
+        selectedAPIs = ["tyyszy", "bfzy", "dyttzy", "ruyi","xiaomaomi","ffzy","heimuer","zy360","iqiyi","wolong","hwba","jisu","dbzy","mozhua","mdzy","zuid","yinghua","baidu","wujin","wwzy","ikun","lzi","fantuan","qiqi"];
         localStorage.setItem('selectedAPIs', JSON.stringify(selectedAPIs));
 
         // 默认选中过滤开关
