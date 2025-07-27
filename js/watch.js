@@ -1,11 +1,17 @@
 // 获取当前URL的参数，并将它们传递给player.html
-window.onload = function() {
+window。onload = function() {
     // 获取当前URL的查询参数
     const currentParams = new URLSearchParams(window.location.search);
     
     // 创建player.html的URL对象
     const playerUrlObj = new URL("player.html", window.location.origin);
-    
+    // 获取不同清晰度的播放地址
+    const qualityEpisodes = JSON.parse(localStorage.getItem('qualityEpisodes')) || {};
+
+    // 将不同清晰度的播放地址添加到player.html的参数中
+    if (!playerUrlObj.searchParams.has('qualityEpisodes')) {
+        playerUrlObj.searchParams.set('qualityEpisodes', JSON.stringify(qualityEpisodes));
+    }
     // 更新状态文本
     const statusElement = document.getElementById('redirect-status');
     const manualRedirect = document.getElementById('manual-redirect');
