@@ -1,6 +1,5 @@
 // 全局变量
 let selectedAPIs = []; // 初始化为空数组，避免在localStorage未初始化时读取API_SITES
-//let selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '["tyyszy","dyttzy", "bfzy", "ruyi"]'); // 默认选中资源
 let customAPIs = JSON.parse(localStorage.getItem('customAPIs') || '[]'); // 存储自定义API列表
 
 // 添加当前播放的集数索引
@@ -14,22 +13,9 @@ let episodesReversed = false;
 
 // 页面初始化
 document.addEventListener('DOMContentLoaded', function () {
-    // 初始化API复选框
-    initAPICheckboxes();
-
-    // 初始化自定义API列表
-    renderCustomAPIsList();
-
-    // 初始化显示选中的API数量
-    updateSelectedApiCount();
-
-    // 渲染搜索历史
-    renderSearchHistory();
-
     // 设置默认API选择（如果是第一次加载）
     if (!localStorage.getItem('hasInitializedDefaults')) {
-        // 默认选中资源
-        //selectedAPIs = ["tyyszy", "bfzy", "dyttzy", "ruyi"];
+        // 默认选中所有非成人API
         selectedAPIs = Object.keys(API_SITES).filter(apiKey => !API_SITES[apiKey].adult);
         customAPIs.forEach((_, index) => {
             selectedAPIs.push(`custom_${index}`);
@@ -45,7 +31,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 标记已初始化默认值
         localStorage.setItem('hasInitializedDefaults', 'true');
+    } else {
+        // 如果已经初始化过，则从localStorage读取
+        selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '[]');
     }
+
+    // 初始化API复选框 - 移到selectedAPIs初始化之后
+    initAPICheckboxes();
+
+    // 初始化自定义API列表
+    renderCustomAPIsList();
+
+    // 初始化显示选中的API数量
+    updateSelectedApiCount();
+
+    // 渲染搜索历史
+    renderSearchHistory();
 
     // 设置黄色内容过滤器开关初始状态
     const yellowFilterToggle = document.getElementById('yellowFilterToggle');
