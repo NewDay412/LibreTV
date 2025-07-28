@@ -245,28 +245,8 @@ function initializePageContent() {
     }
 } // 确保函数有正确的闭括号
 
-// =================================
-// ============== PLAYER ==========
-// =================================
-// 全局变量
-let currentVideoTitle = '';
-let currentEpisodeIndex = 0;
-let art = null; // 用于 ArtPlayer 实例
-let currentHls = null; // 跟踪当前HLS实例
-let currentEpisodes = [];
-let episodesReversed = false;
-let autoplayEnabled = true; // 默认开启自动连播
-let videoHasEnded = false; // 跟踪视频是否已经自然结束
-let userClickedPosition = null; // 记录用户点击的位置
-let shortcutHintTimeout = null; // 用于控制快捷键提示显示时间
-let adFilteringEnabled = true; // 默认开启广告过滤
-let progressSaveInterval = null; // 定期保存进度的计时器
-let currentVideoUrl = ''; // 记录当前实际的视频URL
-const isWebkit = (typeof window.webkitConvertPointFromNodeToPage === 'function')
-Artplayer.FULLSCREEN_WEB_IN_BODY = true;
-
 // 页面加载
-document.addEventListener('DOMContentLoaded', function () {
+document。addEventListener('DOMContentLoaded', function () {
     // 先检查用户是否已通过密码验证
     if (!isPasswordVerified()) {
         // 隐藏加载提示
@@ -278,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // 监听密码验证成功事件
-document.addEventListener('passwordVerified', () => {
+document。addEventListener('passwordVerified', () => {
     document.getElementById('player-loading').style.display = 'block';
 
     initializePageContent();
