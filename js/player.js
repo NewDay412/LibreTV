@@ -55,7 +55,7 @@ function goBack(event) {
 }
 
 // 页面加载时保存当前URL到localStorage，作为返回目标
-window。addEventListener('load'， function () {
+window.addEventListener('load'， function () {
     // 保存前一页面URL
     if (document.referrer && document.referrer !== window.location.href) {
         localStorage.setItem('lastPageUrl', document.referrer);
