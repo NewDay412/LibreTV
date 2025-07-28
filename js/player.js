@@ -70,20 +70,17 @@ window.addEventListener('load', function () {
         localStorage.setItem('currentPlayingId', videoId);
         localStorage.setItem('currentPlayingSource', sourceCode);
     }
-});
+}
+,);
 
 
 // =================================
 // ============== PLAYER ==========
 // =================================
 // 全局变量
-let currentVideoTitle = '';
-let currentEpisodeIndex = 0;
-let art = null; // 用于 ArtPlayer 实例
-let currentHls = null; // 跟踪当前HLS实例
-let currentEpisodes = [];
-let episodesReversed = false;
-let autoplayEnabled = true; // 默认开启自动连播
+/*let currentEpisodes = [];
+  let episodesReversed = false;
+  let autoplayEnabled = true; // 默认开启自动连播
 let videoHasEnded = false; // 跟踪视频是否已经自然结束
 let userClickedPosition = null; // 记录用户点击的位置
 let shortcutHintTimeout = null; // 用于控制快捷键提示显示时间
@@ -91,7 +88,7 @@ let adFilteringEnabled = true; // 默认开启广告过滤
 let progressSaveInterval = null; // 定期保存进度的计时器
 let nextVideoPreload = null; // 下一集预加载对象
 let currentVideoUrl = ''; // 记录当前实际的视频URL
-const isWebkit = (typeof window.webkitConvertPointFromNodeToPage === 'function')
+const isWebkit = (typeof window.webkitConvertPointFromNodeToPage === 'function')*/
 Artplayer.FULLSCREEN_WEB_IN_BODY = true;
 
 // HLS优化配置
@@ -217,6 +214,7 @@ function initializePageContent() {
     autoplayEnabled = localStorage.getItem('autoplayEnabled') !== 'false'; // 默认为true
     document.getElementById('autoplayToggle').checked = autoplayEnabled;
 
+
     // 获取广告过滤设置
     adFilteringEnabled = localStorage.getItem(PLAYER_CONFIG.adFilteringStorage) !== 'false'; // 默认为true
 
@@ -258,17 +256,11 @@ function setupProgressMonitor() {
         localStorage.setItem('currentPlayingId', videoId);
         localStorage.setItem('currentPlayingSource', sourceCode);
     }
-};
-
-
 // =================================
 // ============== PLAYER ==========
 // =================================
 // 全局变量
-let currentVideoTitle = '';
-let currentEpisodeIndex = 0;
-let art = null; // 用于 ArtPlayer 实例
-let currentHls = null; // 跟踪当前HLS实例
+
 let currentEpisodes = [];
 let episodesReversed = false;
 let autoplayEnabled = true; // 默认开启自动连播
@@ -464,7 +456,7 @@ function initializePageContent() {
             clearInterval(waitForVideo);
         }
     }, 200);
-}
+
 // 处理键盘快捷键
 function handleKeyboardShortcuts(e) {
     // 忽略输入框中的按键事件

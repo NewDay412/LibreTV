@@ -20,8 +20,10 @@ const config = {
   timeout: parseInt(process.env.REQUEST_TIMEOUT || '5000'),
   maxRetries: parseInt(process.env.MAX_RETRIES || '2'),
   cacheMaxAge: process.env.CACHE_MAX_AGE || '1d',
-  userAgent: process.env.USER_AGENT || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-  debug: process.env.DEBUG === 'true'
+  userAgent:
+    process.env.USER_AGENT ||
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  debug: process.env.DEBUG === 'true',
 };
 
 const log = (...args) => {
@@ -32,11 +34,13 @@ const log = (...args) => {
 
 const app = express();
 
-app.use(cors({
-  origin: config.corsOrigin,
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: config.corsOrigin,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -61,9 +65,9 @@ async function renderPage(filePath, password) {
   }
   // 添加ADMINPASSWORD注入
   if (config.adminpassword !== '') {
-      const adminSha256 = await sha256Hash(config.adminpassword);
-      content = content.replace('{{ADMINPASSWORD}}', adminSha256);
-  } 
+    const adminSha256 = await sha256Hash(config.adminpassword);
+    content = content.replace('{{ADMINPASSWORD}}', adminSha256);
+  }
   return content;
 }
 
@@ -78,7 +82,7 @@ app.get(['/', '/index.html', '/player.html'], async (req, res) => {
         filePath = path.join(__dirname, 'index.html');
         break;
     }
-    
+
     const content = await renderPage(filePath, config.password);
     res.send(content);
   } catch (error) {
@@ -102,20 +106,22 @@ function isValidUrl(urlString) {
   try {
     const parsed = new URL(urlString);
     const allowedProtocols = ['http:', 'https:'];
-    
+
     // 从环境变量获取阻止的主机名列表
-    const blockedHostnames = (process.env.BLOCKED_HOSTS || 'localhost,127.0.0.1,0.0.0.0,::1').split(',');
-    
+    const blockedHostnames = (process.env.BLOCKED_HOSTS || 'localhost,127.0.0.1,0.0.0.0,::1').split(
+      ','
+    );
+
     // 从环境变量获取阻止的 IP 前缀
     const blockedPrefixes = (process.env.BLOCKED_IP_PREFIXES || '192.168.,10.,172.').split(',');
-    
+
     if (!allowedProtocols.includes(parsed.protocol)) return false;
     if (blockedHostnames.includes(parsed.hostname)) return false;
-    
+
     for (const prefix of blockedPrefixes) {
       if (parsed.hostname.startsWith(prefix)) return false;
     }
-    
+
     return true;
   } catch {
     return false;
@@ -145,7 +151,7 @@ app.get('/proxy/:encodedUrl', async (req, res) => {
     // 添加请求超时和重试逻辑
     const maxRetries = config.maxRetries;
     let retries = 0;
-    
+
     const makeRequest = async () => {
       try {
         return await axios({
@@ -154,8 +160,8 @@ app.get('/proxy/:encodedUrl', async (req, res) => {
           responseType: 'stream',
           timeout: config.timeout,
           headers: {
-            'User-Agent': config.userAgent
-          }
+            'User-Agent': config.userAgent,
+          },
         });
       } catch (error) {
         if (retries < maxRetries) {
@@ -172,11 +178,11 @@ app.get('/proxy/:encodedUrl', async (req, res) => {
     // 转发响应头（过滤敏感头）
     const headers = { ...response.headers };
     const sensitiveHeaders = (
-      process.env.FILTERED_HEADERS || 
+      process.env.FILTERED_HEADERS ||
       'content-security-policy,cookie,set-cookie,x-frame-options,access-control-allow-origin'
     ).split(',');
-    
-    sensitiveHeaders.forEach(header => delete headers[header]);
+
+    sensitiveHeaders.forEach((header) => delete headers[header]);
     res.set(headers);
 
     // 管道传输响应流
@@ -192,9 +198,11 @@ app.get('/proxy/:encodedUrl', async (req, res) => {
   }
 });
 
-app.use(express.static(path.join(__dirname), {
-  maxAge: config.cacheMaxAge
-}));
+app.use(
+  express.static(path.join(__dirname), {
+    maxAge: config.cacheMaxAge,
+  })
+);
 
 app.use((err, req, res, next) => {
   console.error('服务器错误:', err);
@@ -216,6 +224,10 @@ app.listen(config.port, () => {
   }
   if (config.debug) {
     console.log('调试模式已启用');
-    console.log('配置:', { ...config, password: config.password ? '******' : '', adminpassword: config.adminpassword? '******' : '' });
+    console.log('配置:', {
+      ...config,
+      password: config.password ? '******' : '',
+      adminpassword: config.adminpassword ? '******' : '',
+    });
   }
 });

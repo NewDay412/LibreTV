@@ -4,7 +4,7 @@ import { sha256 } from './js/sha256.js'; // 需新建或引入SHA-256实现
 export default async function middleware(request) {
   // Get the URL from the request
   const url = new URL(request.url);
-  
+
   // Only process HTML pages
   const isHtmlPage = url.pathname.endsWith('.html') || url.pathname.endsWith('/');
   if (!isHtmlPage) {
@@ -13,7 +13,7 @@ export default async function middleware(request) {
 
   // Fetch the original response
   const response = await fetch(request);
-  
+
   // Check if it's an HTML response
   const contentType = response.headers.get('content-type') || '';
   if (!contentType.includes('text/html')) {
@@ -22,7 +22,7 @@ export default async function middleware(request) {
 
   // Get the HTML content
   const originalHtml = await response.text();
-  
+
   // Replace the placeholder with actual environment variable
   // If PASSWORD is not set, replace with empty string
   const password = process.env.PASSWORD || '';
@@ -36,7 +36,7 @@ export default async function middleware(request) {
   if (adminpassword) {
     adminpasswordHash = await sha256(adminpassword); // 修复变量名
   }
-  
+
   // 合并两次替换为一次操作
   let modifiedHtml = originalHtml
     .replace(
@@ -52,7 +52,7 @@ export default async function middleware(request) {
   return new Response(modifiedHtml, {
     status: response.status,
     statusText: response.statusText,
-    headers: response.headers
+    headers: response.headers,
   });
 }
 
