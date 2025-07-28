@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // 监听密码验证成功事件
-document。addEventListener('passwordVerified', () => {
+document.addEventListener('passwordVerified', () => {
     document.getElementById('player-loading').style.display = 'block';
 
     initializePageContent();
