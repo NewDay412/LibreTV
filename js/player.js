@@ -250,7 +250,7 @@ function setupProgressMonitor() {
         localStorage.setItem('currentPlayingId', videoId);
         localStorage.setItem('currentPlayingSource', sourceCode);
     }
-});
+};
 
 
 // =================================
