@@ -92,7 +92,7 @@ let progressSaveInterval = null; // 定期保存进度的计时器
 let nextVideoPreload = null; // 下一集预加载对象
 let currentVideoUrl = ''; // 记录当前实际的视频URL
 const isWebkit = (typeof window.webkitConvertPointFromNodeToPage === 'function')
-Artplayer。FULLSCREEN_WEB_IN_BODY = true;
+Artplayer.FULLSCREEN_WEB_IN_BODY = true;
 
 // HLS优化配置
 const hlsConfig = {
@@ -169,6 +169,7 @@ function initializePageContent() {
     if (isNaN(index)) index = 0;
     const episodesList = urlParams.get('episodes'); // 从URL获取集数信息
     const savedPosition = parseInt(urlParams.get('position') || '0'); // 获取保存的播放位置
+    
     // 解决历史记录问题：检查URL是否是player.html开头的链接
     // 如果是，说明这是历史记录重定向，需要解析真实的视频URL
     if (videoUrl && videoUrl.includes('player.html')) {
@@ -204,7 +205,6 @@ function initializePageContent() {
         } catch (e) {
         }
     }
-}
 
     // 保存当前视频URL
     currentVideoUrl = videoUrl || '';
@@ -221,25 +221,10 @@ function initializePageContent() {
     adFilteringEnabled = localStorage.getItem(PLAYER_CONFIG.adFilteringStorage) !== 'false'; // 默认为true
 
     // 监听自动连播开关变化
-document.getElementById('autoplayToggle').addEventListener('change', function (e) {
-    autoplayEnabled = e.target.checked;
-    localStorage.setItem('autoplayEnabled', autoplayEnabled);
-});
-
-// 监听视频播放进度，触发预加载
-function setupProgressMonitor() {
-    if (!art) return;
-    
-    art.on('timeupdate', function() {
-        const currentTime = art.currentTime;
-        const duration = art.duration;
-        
-        // 当视频播放超过80%且有下一集时触发预加载
-        if (duration > 0 && currentTime / duration > 0.8) {
-            preloadNextEpisode();
-        }
+    document.getElementById('autoplayToggle').addEventListener('change', function (e) {
+        autoplayEnabled = e.target.checked;
+        localStorage.setItem('autoplayEnabled', autoplayEnabled);
     });
-}
 
     // 优先使用URL传递的集数信息，否则从localStorage获取
     try {
@@ -258,7 +243,7 @@ function setupProgressMonitor() {
         localStorage.setItem('currentPlayingId', videoId);
         localStorage.setItem('currentPlayingSource', sourceCode);
     }
-
+} // 确保函数有正确的闭括号
 
 // =================================
 // ============== PLAYER ==========
