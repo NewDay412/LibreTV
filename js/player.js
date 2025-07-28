@@ -203,6 +203,7 @@ function initializePageContent() {
         } catch (e) {
         }
     }
+}
 
     // 保存当前视频URL
     currentVideoUrl = videoUrl || '';
