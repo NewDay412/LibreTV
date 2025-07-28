@@ -77,7 +77,7 @@ window.addEventListener('load', function () {
 // ============== PLAYER ==========
 // =================================
 // 全局变量
-let currentVideoTitle = '';
+/*let currentVideoTitle = '';
 let currentEpisodeIndex = 0;
 let art = null; // 用于 ArtPlayer 实例
 let currentHls = null; // 跟踪当前HLS实例
@@ -91,7 +91,7 @@ let adFilteringEnabled = true; // 默认开启广告过滤
 let progressSaveInterval = null; // 定期保存进度的计时器
 let nextVideoPreload = null; // 下一集预加载对象
 let currentVideoUrl = ''; // 记录当前实际的视频URL
-const isWebkit = (typeof window.webkitConvertPointFromNodeToPage === 'function')
+const isWebkit = (typeof window.webkitConvertPointFromNodeToPage === 'function')*/
 Artplayer.FULLSCREEN_WEB_IN_BODY = true;
 
 // HLS优化配置
