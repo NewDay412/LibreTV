@@ -401,49 +401,12 @@ function initPlayer(videoUrl) {
     if (!videoUrl) {
         return
     }
-    // 获取清晰度选择框
-    const qualitySelect = document.getElementById('qualitySelect');
 
-    // 清空原有选项
-    qualitySelect.innerHTML = '';
-// 获取URL参数
-    const urlParams = new URLSearchParams(window.location.search);
-
-    // 获取不同清晰度的播放地址
-    const qualityEpisodes = JSON.parse(urlParams.get('qualityEpisodes') || '{}');
-
-    // 保存到localStorage
-    localStorage.setItem('qualityEpisodes', JSON.stringify(qualityEpisodes));
-
-    // 添加清晰度选项
-    Object.keys(qualityEpisodes).forEach(quality => {
-        const option = document.createElement('option');
-        option.value = quality;
-        option.textContent = quality;
-        qualitySelect.appendChild(option);
-    });
-
-    // 默认选择第一个清晰度
-    if (qualitySelect.options.length > 0) {
-        qualitySelect.selectedIndex = 0;
+    // 销毁旧实例
+    if (art) {
+        art.destroy();
+        art = null;
     }
-
-    // 添加选择事件监听器
-    qualitySelect.addEventListener('change', function () {
-        const selectedQuality = this.value;
-        const selectedEpisodes = qualityEpisodes[selectedQuality];
-
-        if (selectedEpisodes && selectedEpisodes.length > currentEpisodeIndex) {
-            const newVideoUrl = selectedEpisodes[currentEpisodeIndex];
-             // 销毁旧实例
-            if (art) {
-                art.destroy();
-                art = null;
-            }
-            // 重新初始化播放器
-            initPlayer(newVideoUrl);
-        }
-    });
 
     // 配置HLS.js选项
     const hlsConfig = {
