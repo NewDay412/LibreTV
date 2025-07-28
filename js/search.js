@@ -1,5 +1,15 @@
+const searchCache = new Map();
+
 async function searchByAPIAndKeyWord(apiId, query) {
   try {
+    const cacheKey = `${apiId}_${query}`;
+    if (searchCache.has(cacheKey)) {
+      const cached = searchCache.get(cacheKey);
+      if (Date.now() - cached.timestamp < 300000) { // 5分钟缓存有效期
+        return cached.data;
+      }
+      searchCache.delete(cacheKey);
+    }
     let apiUrl, apiName, apiBaseUrl;
 
     // 处理自定义API
@@ -21,7 +31,7 @@ async function searchByAPIAndKeyWord(apiId, query) {
 
     // 添加超时处理
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
     const response = await fetch(PROXY_URL + encodeURIComponent(apiUrl), {
       headers: API_CONFIG.search.headers,
@@ -53,7 +63,7 @@ async function searchByAPIAndKeyWord(apiId, query) {
     // 获取总页数
     const pageCount = data.pagecount || 1;
     // 确定需要获取的额外页数 (最多获取maxPages页)
-    const pagesToFetch = Math.min(pageCount - 1, API_CONFIG.search.maxPages - 1);
+    const pagesToFetch = Math.min(pageCount - 1, 1); // 最多额外请求1页结果
 
     // 如果有额外页数，获取更多页的结果
     if (pagesToFetch > 0) {
@@ -71,7 +81,7 @@ async function searchByAPIAndKeyWord(apiId, query) {
         const pagePromise = (async () => {
           try {
             const pageController = new AbortController();
-            const pageTimeoutId = setTimeout(() => pageController.abort(), 8000);
+            const pageTimeoutId = setTimeout(() => pageController.abort(), 3000);
 
             const pageResponse = await fetch(PROXY_URL + encodeURIComponent(pageUrl), {
               headers: API_CONFIG.search.headers,
@@ -115,6 +125,10 @@ async function searchByAPIAndKeyWord(apiId, query) {
       });
     }
 
+    searchCache.set(cacheKey, {
+      data: results,
+      timestamp: Date.now()
+    });
     return results;
   } catch (error) {
     console.warn(`API ${apiId} 搜索失败:`, error);
