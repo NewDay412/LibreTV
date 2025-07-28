@@ -96,22 +96,49 @@ Artplayer.FULLSCREEN_WEB_IN_BODY = true;
 
 // HLS优化配置
 const hlsConfig = {
-    maxBufferLength: 30,
-    maxMaxBufferLength: 60,
-    startLevel: -1,
-    abrEwmaDefaultEstimate: 1000000,
-    abrEwmaFastLive: 3.0,
-    abrEwmaSlowLive: 9.0,
-    abrEwmaDefaultEstimate: 5000000,
-    lowLatencyMode: true
+    maxBufferLength: 0.005, // 极限减少缓冲长度至0.005秒
+    maxMaxBufferLength: 0.3, // 进一步降低最大缓冲上限至0.3秒
+    minBufferLength: 0.005, // 最小缓冲长度，允许更快开始播放
+    startLevel: 0, // 从最低清晰度开始播放，加快启动速度
+    minAutoBitrate: 0, // 允许ABR选择最低可用码率
+    abrEwmaDefaultEstimate: 3000000, // 默认带宽估计(3Mbps)提高初始码率
+    abrEwmaFastLive: 0.01, // 超极速带宽估计适应
+    abrEwmaSlowLive: 0.2, // 超快速码率调整响应
+    predictiveNetworkPolicy: true, // 启用预测性网络策略
+    maxFragLookUpTolerance: 0.1, // 减少片段查找延迟
+    maxLoadingDelay: 0.5, // 极限缩短加载延迟上限
+    maxRetryCount: 1, // 减少失败重试次数
+    lowLatencyMode: true, // 启用低延迟模式
+    highLatencyMode: false, // 显式禁用高延迟模式
+    backBufferLength: 0.3, // 进一步减少回退缓冲至0.3秒
+    liveSyncDurationCount: 0, // 极限直播同步缓冲
+    liveSyncDuration: 0.03, // 直播同步持续时间控制
+    segmentsRenderedMaxLatencyCount: 1, // 控制实时流最大延迟段数
+    liveMaxLatencyDuration: 1, // 最大直播延迟降至1秒
+    maxBufferHole: 0.02, // 极限减少缓冲空洞至0.02秒
+    maxMaxBufferHole: 0.1, // 减少最大缓冲空洞至0.1秒
+    maxLoadingDelay: 0.1, // 极限缩短加载延迟至0.1秒
+    maxBufferSize: 0.8 * 1024 * 1024, // 进一步限制缓冲区大小为0.8MB
+    preloadTime: 17, // 提前加载17秒数据
+    enableWorker: true, // 使用Web Worker处理HLS解析，避免阻塞主线程
+    fetchMaxRetry: 0, // 禁用请求重试减少延迟
+    backoffDelay: 100, // 减少初始退避延迟
+    backoffDelayMax: 500, // 减少最大退避延迟
+    segmentLoadingTimeOut: 1000, // 片段加载超时控制在1秒
+    enableLowLatencyMode: true, // 显式启用低延迟模式
+    segmentLoadingRetryDelay: 50, // 减少片段加载重试延迟
+    startLevel: -1, // 自动选择起始码率
+    fetchTimeout: 1500, // 请求超时控制在1.5秒
+    maxStartUpTime: 1.0, // 启动超时控制在1秒
+    enableWorker: true // 使用Web Worker处理HLS解析，避免阻塞主线程
 };
 
-// 预加载下一集视频
+// 预加载下一集视频 - 优化版
 function preloadNextEpisode() {
     if (currentEpisodeIndex >= currentEpisodes.length - 1) return; // 已是最后一集
     
-    const nextEpisode = currentEpisodes[currentEpisodeIndex + 1];
-    if (!nextEpisode || !nextEpisode.url) return;
+    const nextUrl = currentEpisodes[currentEpisodeIndex + 1];
+    if (!nextUrl) return;
     
     // 取消之前的预加载
     if (nextVideoPreload) {
@@ -122,18 +149,43 @@ function preloadNextEpisode() {
     const controller = new AbortController();
     nextVideoPreload = controller;
     
-    fetch(nextEpisode.url, {
+    // 使用Link预加载头优化资源获取
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'video'; // 指定视频类型预加载
+    link.type = 'application/x-mpegURL'; // 添加HLS类型提示
+    link.href = nextUrl;
+    link.crossOrigin = 'anonymous';
+    link.priority = 'high'; // 高优先级预加载
+    link.importance = 'high'; // 强调高重要性
+    link.fetchpriority = 'high'; // 强制高优先级获取
+    document.head.appendChild(link);
+    // 提前建立域名连接
+    const preconnectLink = document.createElement('link');
+    preconnectLink.rel = 'preconnect';
+    preconnectLink.href = new URL(nextUrl).origin;
+    // 添加DNS预取
+    const dnsPrefetchLink = document.createElement('link');
+    dnsPrefetchLink.rel = 'dns-prefetch';
+    dnsPrefetchLink.href = new URL(nextUrl).origin;
+    document.head.appendChild(dnsPrefetchLink);
+    document.head.appendChild(preconnectLink);
+    
+    // 同时发起HEAD请求建立连接
+    fetch(nextUrl, {
         method: 'HEAD',
         signal: controller.signal,
-        headers: {'Range': 'bytes=0-10240'} // 只请求前10KB数据建立连接
+        headers: {'Range': 'bytes=0-563200'} // 请求前550KB数据加速启动
     }).then(response => {
         if (response.ok) {
-            console.log('下一集预加载成功:', nextEpisode.title);
+            console.log('下一集预加载成功');
         }
     }).catch(error => {
-        if (!error.name === 'AbortError') {
+        if (error.name !== 'AbortError') {
             console.warn('下一集预加载失败:', error);
         }
+    }).finally(() => {
+        document.head.removeChild(link);
     });
 }
 
@@ -1362,15 +1414,32 @@ function formatTime(seconds) {
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-// 开始定期保存播放进度
+// 开始定期保存播放进度 - 优化版
 function startProgressSaveInterval() {
     // 清除可能存在的旧计时器
     if (progressSaveInterval) {
         clearInterval(progressSaveInterval);
     }
-
-    // 每30秒保存一次播放进度
-    progressSaveInterval = setInterval(saveCurrentProgress, 30000);
+    
+    // 使用requestIdleCallback在浏览器空闲时保存进度
+    function saveWhenIdle() {
+        if (document.hidden) {
+            // 页面隐藏时立即保存
+            saveCurrentProgress();
+            progressSaveInterval = setTimeout(saveWhenIdle, 5000);
+        } else {
+            // 页面活跃时使用空闲回调
+            requestIdleCallback(
+                () => {
+                    saveCurrentProgress();
+                    progressSaveInterval = setTimeout(saveWhenIdle, 15000);
+                },
+                { timeout: 3000 }
+            );
+        }
+    }
+    
+    saveWhenIdle();
 }
 
 // 保存当前播放进度

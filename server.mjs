@@ -2,6 +2,7 @@ import path from 'path';
 import express from 'express';
 import axios from 'axios';
 import cors from 'cors';
+import compression from 'compression';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import crypto from 'crypto';
@@ -17,7 +18,7 @@ const config = {
   password: process.env.PASSWORD || '',
   adminpassword: process.env.ADMINPASSWORD || '',
   corsOrigin: process.env.CORS_ORIGIN || '*',
-  timeout: parseInt(process.env.REQUEST_TIMEOUT || '5000'),
+  timeout: parseInt(process.env.REQUEST_TIMEOUT || '3000'),
   maxRetries: parseInt(process.env.MAX_RETRIES || '2'),
   cacheMaxAge: process.env.CACHE_MAX_AGE || '1d',
   userAgent:
@@ -34,6 +35,7 @@ const log = (...args) => {
 
 const app = express();
 
+app.use(compression());
 app.use(
   cors({
     origin: config.corsOrigin,
