@@ -1,5 +1,6 @@
 // 全局变量
-let selectedAPIs = []; // 初始化为空数组，避免在localStorage未初始化时读取API_SITES
+let selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || JSON.stringify(Object.keys(API_SITES)));
+//let selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '["tyyszy", "bfzy", "dyttzy", "ruyi","xiaomaomi","ffzy","heimuer","zy360","iqiyi","wolong","hwba","jisu","dbzy","mozhua","mdzy","zuid","yinghua","baidu","wujin","wwzy","ikun","lzi","fantuanzy","qiqi"]'); // 默认选中资源
 let customAPIs = JSON.parse(localStorage.getItem('customAPIs') || '[]'); // 存储自定义API列表
 
 // 添加当前播放的集数索引
@@ -13,26 +14,23 @@ let episodesReversed = false;
 
 // 页面初始化
 document.addEventListener('DOMContentLoaded', function () {
+    // 初始化API复选框
+    initAPICheckboxes();
+
+    // 初始化自定义API列表
+    renderCustomAPIsList();
+
+    // 初始化显示选中的API数量
+    updateSelectedApiCount();
+
+    // 渲染搜索历史
+    renderSearchHistory();
+
     // 设置默认API选择（如果是第一次加载）
     if (!localStorage.getItem('hasInitializedDefaults')) {
-        // 获取黄色内容过滤器状态
-        const yellowFilterEnabled = localStorage.getItem('yellowFilterEnabled') === 'true';
-        
-        // 默认选中所有非成人API
-        selectedAPIs = Object.keys(API_SITES).filter(apiKey => {
-            const api = API_SITES[apiKey];
-            return !api.adult || !yellowFilterEnabled;
-        });
-        
-        // 处理自定义API
-        customAPIs.forEach((api, index) => {
-            if (!api.isAdult || !yellowFilterEnabled) {
-                selectedAPIs.push(`custom_${index}`);
-            }
-        });
-        
+    // 默认选中所有 API
+        selectedAPIs = Object.keys(API_SITES);
         localStorage.setItem('selectedAPIs', JSON.stringify(selectedAPIs));
-
         // 默认选中过滤开关
         localStorage.setItem('yellowFilterEnabled', 'true');
         localStorage.setItem(PLAYER_CONFIG.adFilteringStorage, 'true');
@@ -42,36 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 标记已初始化默认值
         localStorage.setItem('hasInitializedDefaults', 'true');
-    } else {
-        // 如果已经初始化过，则从localStorage读取
-        selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '[]');
-        
-        // 确保当前黄色内容过滤器状态与选中的API一致
-        const yellowFilterEnabled = localStorage.getItem('yellowFilterEnabled') === 'true';
-        if (yellowFilterEnabled) {
-            // 过滤掉所有成人API
-            selectedAPIs = selectedAPIs.filter(apiKey => {
-                if (apiKey.startsWith('custom_')) {
-                    const index = parseInt(apiKey.replace('custom_', ''));
-                    return customAPIs[index] && !customAPIs[index].isAdult;
-                } else {
-                    return API_SITES[apiKey] && !API_SITES[apiKey].adult;
-                }
-            });
-            localStorage.setItem('selectedAPIs', JSON.stringify(selectedAPIs));
-        }
     }
-
-    // 初始化API复选框 - 移到selectedAPIs初始化之后
-    initAPICheckboxes();
-     // 初始化自定义API列表
-    renderCustomAPIsList();
-
-    // 初始化显示选中的API数量
-    updateSelectedApiCount();
-
-    // 渲染搜索历史
-    renderSearchHistory();
 
     // 设置黄色内容过滤器开关初始状态
     const yellowFilterToggle = document.getElementById('yellowFilterToggle');
@@ -90,26 +59,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 初始检查成人API选中状态
     setTimeout(checkAdultAPIsSelected, 100);
-
-    // 检查并恢复上次播放状态
-    const lastPlayTime = localStorage.getItem('lastPlayTime');
-    const currentTime = Date.now();
-    // 如果上次播放时间在1小时内，则恢复播放历史
-    if (lastPlayTime && (currentTime - parseInt(lastPlayTime)) < (60 * 60 * 1000)) {
-        const lastVideoTitle = localStorage.getItem('currentVideoTitle');
-        if (lastVideoTitle) {
-            // 显示恢复播放提示
-            showResumePlayPrompt(lastVideoTitle);
-        }
-    }
-
-    // 检查并应用URL中的搜索参数
-    const urlParams = new URLSearchParams(window.location.search);
-    const searchQuery = urlParams.get('s');
-    if (searchQuery) {
-        document.getElementById('searchInput').value = decodeURIComponent(searchQuery);
-        search();
-    }
 });
 
 // 初始化API复选框
@@ -171,7 +120,7 @@ function addAdultAPI() {
         adultdiv.className = 'grid grid-cols-2 gap-2';
         const adultTitle = document.createElement('div');
         adultTitle.className = 'api-group-title adult';
-        adultTitle.innerHTML = `test <span class="adult-warning">
+        adultTitle.innerHTML = `黄色资源采集站 <span class="adult-warning">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -231,7 +180,7 @@ function checkAdultAPIsSelected() {
 
         // 修改描述文字
         if (filterDescription) {
-            filterDescription.innerHTML = '<strong class="text-pink-300">选中test时无法启用此过滤</strong>';
+            filterDescription.innerHTML = '<strong class="text-pink-300">选中黄色资源站时无法启用此过滤</strong>';
         }
 
         // 移除提示信息（如果存在）
@@ -246,7 +195,7 @@ function checkAdultAPIsSelected() {
 
         // 恢复原来的描述文字
         if (filterDescription) {
-            filterDescription.innerHTML = '过滤test内容';
+            filterDescription.innerHTML = '过滤"伦理片"等黄色内容';
         }
 
         // 移除提示信息
@@ -567,6 +516,8 @@ function setupEventListeners() {
             search();
         }
     });
+
+    // 点击外部关闭设置面板和历史记录面板
 
     // 点击外部关闭设置面板和历史记录面板
     document.addEventListener('click', function (e) {
