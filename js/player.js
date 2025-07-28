@@ -359,17 +359,14 @@ function initializePageContent() {
         localStorage.setItem('autoplayEnabled', autoplayEnabled);
     });
 
-    // 优先使用URL传递的集数信息，否则从localStorage获取
+  // 优先使用URL传递的集数信息，否则从localStorage获取
     try {
         if (episodesList) {
             // 如果URL中有集数数据，优先使用它
             currentEpisodes = JSON.parse(decodeURIComponent(episodesList));
-
->>>>>>> 0f18c80d1df39498633a5868fb7782cf366d88a6
         } else {
             // 否则从localStorage获取
             currentEpisodes = JSON.parse(localStorage.getItem('currentEpisodes') || '[]');
-
         }
 
         // 检查集数索引是否有效，如果无效则调整为0
@@ -460,7 +457,6 @@ function initializePageContent() {
         }
     }, 200);
 }
-
 // 处理键盘快捷键
 function handleKeyboardShortcuts(e) {
     // 忽略输入框中的按键事件
