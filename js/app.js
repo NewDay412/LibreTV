@@ -1,6 +1,5 @@
 // 全局变量
 let selectedAPIs = []; // 初始化为空数组，避免在localStorage未初始化时读取API_SITES
-//let selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '["tyyszy","dyttzy", "bfzy", "ruyi"]'); // 默认选中资源
 let customAPIs = JSON.parse(localStorage.getItem('customAPIs') || '[]'); // 存储自定义API列表
 
 // 添加当前播放的集数索引
@@ -14,26 +13,24 @@ let episodesReversed = false;
 
 // 页面初始化
 document.addEventListener('DOMContentLoaded', function () {
-    // 初始化API复选框
-    initAPICheckboxes();
-
-    // 初始化自定义API列表
-    renderCustomAPIsList();
-
-    // 初始化显示选中的API数量
-    updateSelectedApiCount();
-
-    // 渲染搜索历史
-    renderSearchHistory();
-
     // 设置默认API选择（如果是第一次加载）
     if (!localStorage.getItem('hasInitializedDefaults')) {
-        // 默认选中资源
-        //selectedAPIs = ["tyyszy", "bfzy", "dyttzy", "ruyi"];
-        selectedAPIs = Object.keys(API_SITES).filter(apiKey => !API_SITES[apiKey].adult);
-        customAPIs.forEach((_, index) => {
-            selectedAPIs.push(`custom_${index}`);
+        // 获取黄色内容过滤器状态
+        const yellowFilterEnabled = localStorage.getItem('yellowFilterEnabled') === 'true';
+        
+        // 默认选中所有非成人API
+        selectedAPIs = Object.keys(API_SITES).filter(apiKey => {
+            const api = API_SITES[apiKey];
+            return !api.adult || !yellowFilterEnabled;
         });
+        
+        // 处理自定义API
+        customAPIs.forEach((api, index) => {
+            if (!api.isAdult || !yellowFilterEnabled) {
+                selectedAPIs.push(`custom_${index}`);
+            }
+        });
+        
         localStorage.setItem('selectedAPIs', JSON.stringify(selectedAPIs));
 
         // 默认选中过滤开关
@@ -45,7 +42,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 标记已初始化默认值
         localStorage.setItem('hasInitializedDefaults', 'true');
+    } else {
+        // 如果已经初始化过，则从localStorage读取
+        selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '[]');
+        
+        // 确保当前黄色内容过滤器状态与选中的API一致
+        const yellowFilterEnabled = localStorage.getItem('yellowFilterEnabled') === 'true';
+        if (yellowFilterEnabled) {
+            // 过滤掉所有成人API
+            selectedAPIs = selectedAPIs.filter(apiKey => {
+                if (apiKey.startsWith('custom_')) {
+                    const index = parseInt(apiKey.replace('custom_', ''));
+                    return customAPIs[index] && !customAPIs[index].isAdult;
+                } else {
+                    return API_SITES[apiKey] && !API_SITES[apiKey].adult;
+                }
+            });
+            localStorage.setItem('selectedAPIs', JSON.stringify(selectedAPIs));
+        }
     }
+
+    // 初始化API复选框 - 移到selectedAPIs初始化之后
+    initAPICheckboxes();
+     // 初始化自定义API列表
+    renderCustomAPIsList();
+
+    // 初始化显示选中的API数量
+    updateSelectedApiCount();
+
+    // 渲染搜索历史
+    renderSearchHistory();
 
     // 设置黄色内容过滤器开关初始状态
     const yellowFilterToggle = document.getElementById('yellowFilterToggle');
@@ -64,6 +90,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 初始检查成人API选中状态
     setTimeout(checkAdultAPIsSelected, 100);
+
+    // 检查并恢复上次播放状态
+    const lastPlayTime = localStorage.getItem('lastPlayTime');
+    const currentTime = Date.now();
+    // 如果上次播放时间在1小时内，则恢复播放历史
+    if (lastPlayTime && (currentTime - parseInt(lastPlayTime)) < (60 * 60 * 1000)) {
+        const lastVideoTitle = localStorage.getItem('currentVideoTitle');
+        if (lastVideoTitle) {
+            // 显示恢复播放提示
+            showResumePlayPrompt(lastVideoTitle);
+        }
+    }
+
+    // 检查并应用URL中的搜索参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('s');
+    if (searchQuery) {
+        document.getElementById('searchInput').value = decodeURIComponent(searchQuery);
+        search();
+    }
 });
 
 // 初始化API复选框
