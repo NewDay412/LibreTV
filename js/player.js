@@ -166,6 +166,7 @@ function initializePageContent() {
     const title = urlParams.get('title');
     const sourceCode = urlParams.get('source');
     let index = parseInt(urlParams.get('index') || '0');
+    if (isNaN(index)) index = 0;
     const episodesList = urlParams.get('episodes'); // 从URL获取集数信息
     const savedPosition = parseInt(urlParams.get('position') || '0'); // 获取保存的播放位置
     // 解决历史记录问题：检查URL是否是player.html开头的链接
@@ -245,6 +246,12 @@ function setupProgressMonitor() {
         if (episodesList) {
             // 如果URL中有集数数据，优先使用它
             currentEpisodes = JSON.parse(decodeURIComponent(episodesList));
+        }
+    } catch (e) {
+        console.error('解析集数数据失败:', e);
+        // 从localStorage获取集数数据
+        currentEpisodes = JSON.parse(localStorage.getItem('currentEpisodes') || '[]');
+    }
 
     if (videoId && sourceCode) {
         // 保存当前播放状态，以便其他页面可以返回
@@ -1790,6 +1797,10 @@ async function switchToResource(sourceKey, vodId) {
         const timestamp = new Date().getTime();
         const cacheBuster = `&_t=${timestamp}`;
         const response = await fetch(`/api/detail?id=${encodeURIComponent(vodId)}${apiParams}${cacheBuster}`);
+        
+        if (!response.ok) {
+            throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
+        }
         
         const data = await response.json();
         
