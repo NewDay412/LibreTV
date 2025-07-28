@@ -245,8 +245,6 @@ function setupProgressMonitor() {
             // 如果URL中有集数数据，优先使用它
             currentEpisodes = JSON.parse(decodeURIComponent(episodesList));
 
-=======
-
     if (videoId && sourceCode) {
         // 保存当前播放状态，以便其他页面可以返回
         localStorage.setItem('currentPlayingId', videoId);
