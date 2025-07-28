@@ -176,7 +176,6 @@ if (videoDetail.vod_play_url) {
         }).filter(url => url && (url.startsWith('http://') || url.startsWith('https://')));
     }
 }
-                
                 // 如果没有找到播放地址，尝试使用正则表达式查找m3u8链接
                 if (episodes.length === 0 && videoDetail.vod_content) {
                     const matches = videoDetail.vod_content.match(M3U8_PATTERN) || [];
