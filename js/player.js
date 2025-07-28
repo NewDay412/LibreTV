@@ -65,7 +65,6 @@ window.addEventListener('load', function () {
     const urlParams = new URLSearchParams(window.location.search);
     const videoId = urlParams.get('id');
     const sourceCode = urlParams.get('source');
-
     if (videoId && sourceCode) {
         // 保存当前播放状态，以便其他页面可以返回
         localStorage.setItem('currentPlayingId', videoId);
@@ -246,6 +245,129 @@ function setupProgressMonitor() {
             // 如果URL中有集数数据，优先使用它
             currentEpisodes = JSON.parse(decodeURIComponent(episodesList));
 
+=======
+
+    if (videoId && sourceCode) {
+        // 保存当前播放状态，以便其他页面可以返回
+        localStorage.setItem('currentPlayingId', videoId);
+        localStorage.setItem('currentPlayingSource', sourceCode);
+    }
+});
+
+
+// =================================
+// ============== PLAYER ==========
+// =================================
+// 全局变量
+let currentVideoTitle = '';
+let currentEpisodeIndex = 0;
+let art = null; // 用于 ArtPlayer 实例
+let currentHls = null; // 跟踪当前HLS实例
+let currentEpisodes = [];
+let episodesReversed = false;
+let autoplayEnabled = true; // 默认开启自动连播
+let videoHasEnded = false; // 跟踪视频是否已经自然结束
+let userClickedPosition = null; // 记录用户点击的位置
+let shortcutHintTimeout = null; // 用于控制快捷键提示显示时间
+let adFilteringEnabled = true; // 默认开启广告过滤
+let progressSaveInterval = null; // 定期保存进度的计时器
+let currentVideoUrl = ''; // 记录当前实际的视频URL
+const isWebkit = (typeof window.webkitConvertPointFromNodeToPage === 'function')
+Artplayer.FULLSCREEN_WEB_IN_BODY = true;
+
+// 页面加载
+document.addEventListener('DOMContentLoaded', function () {
+    // 先检查用户是否已通过密码验证
+    if (!isPasswordVerified()) {
+        // 隐藏加载提示
+        document.getElementById('player-loading').style.display = 'none';
+        return;
+    }
+
+    initializePageContent();
+});
+
+// 监听密码验证成功事件
+document.addEventListener('passwordVerified', () => {
+    document.getElementById('player-loading').style.display = 'block';
+
+    initializePageContent();
+});
+
+// 初始化页面内容
+function initializePageContent() {
+
+    // 解析URL参数
+    const urlParams = new URLSearchParams(window.location.search);
+    let videoUrl = urlParams.get('url');
+    const title = urlParams.get('title');
+    const sourceCode = urlParams.get('source');
+    let index = parseInt(urlParams.get('index') || '0');
+    const episodesList = urlParams.get('episodes'); // 从URL获取集数信息
+    const savedPosition = parseInt(urlParams.get('position') || '0'); // 获取保存的播放位置
+    // 解决历史记录问题：检查URL是否是player.html开头的链接
+    // 如果是，说明这是历史记录重定向，需要解析真实的视频URL
+    if (videoUrl && videoUrl.includes('player.html')) {
+        try {
+            // 尝试从嵌套URL中提取真实的视频链接
+            const nestedUrlParams = new URLSearchParams(videoUrl.split('?')[1]);
+            // 从嵌套参数中获取真实视频URL
+            const nestedVideoUrl = nestedUrlParams.get('url');
+            // 检查嵌套URL是否包含播放位置信息
+            const nestedPosition = nestedUrlParams.get('position');
+            const nestedIndex = nestedUrlParams.get('index');
+            const nestedTitle = nestedUrlParams.get('title');
+
+            if (nestedVideoUrl) {
+                videoUrl = nestedVideoUrl;
+
+                // 更新当前URL参数
+                const url = new URL(window.location.href);
+                if (!urlParams.has('position') && nestedPosition) {
+                    url.searchParams.set('position', nestedPosition);
+                }
+                if (!urlParams.has('index') && nestedIndex) {
+                    url.searchParams.set('index', nestedIndex);
+                }
+                if (!urlParams.has('title') && nestedTitle) {
+                    url.searchParams.set('title', nestedTitle);
+                }
+                // 替换当前URL
+                window.history.replaceState({}, '', url);
+            } else {
+                showError('历史记录链接无效，请返回首页重新访问');
+            }
+        } catch (e) {
+        }
+    }
+
+    // 保存当前视频URL
+    currentVideoUrl = videoUrl || '';
+
+    // 从localStorage获取数据
+    currentVideoTitle = title || localStorage.getItem('currentVideoTitle') || '未知视频';
+    currentEpisodeIndex = index;
+
+    // 设置自动连播开关状态
+    autoplayEnabled = localStorage.getItem('autoplayEnabled') !== 'false'; // 默认为true
+    document.getElementById('autoplayToggle').checked = autoplayEnabled;
+
+    // 获取广告过滤设置
+    adFilteringEnabled = localStorage.getItem(PLAYER_CONFIG.adFilteringStorage) !== 'false'; // 默认为true
+
+    // 监听自动连播开关变化
+    document.getElementById('autoplayToggle').addEventListener('change', function (e) {
+        autoplayEnabled = e.target.checked;
+        localStorage.setItem('autoplayEnabled', autoplayEnabled);
+    });
+
+    // 优先使用URL传递的集数信息，否则从localStorage获取
+    try {
+        if (episodesList) {
+            // 如果URL中有集数数据，优先使用它
+            currentEpisodes = JSON.parse(decodeURIComponent(episodesList));
+
+>>>>>>> 0f18c80d1df39498633a5868fb7782cf366d88a6
         } else {
             // 否则从localStorage获取
             currentEpisodes = JSON.parse(localStorage.getItem('currentEpisodes') || '[]');
